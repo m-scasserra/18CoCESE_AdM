@@ -4,7 +4,8 @@
 ### Preguntas orientadoras
 
 1. Describa brevemente los diferentes perfiles de familias de microprocesadores/microcontroladores de ARM. Explique alguna de sus diferencias características.
-####Cortex M
+
+#### Cortex M
 
 1. Describa brevemente las diferencias entre las familias de procesadores Cortex M0, M3 y M4.
 
@@ -50,7 +51,7 @@
 
 23. ¿Para qué se suele utilizar la excepción SVC? Expliquelo dentro de un marco de un sistema operativo embebido.
 
-####ISA
+#### ISA
 
 1. ¿Qué son los sufijos y para qué se los utiliza? Dé un ejemplo
 
