@@ -63,6 +63,8 @@ static void MX_USART3_UART_Init(void);
 static void MX_USB_OTG_FS_PCD_Init(void);
 void zeros (uint32_t * vector, uint32_t longitud);
 void productoEscalar32 (uint32_t * vectorIn, uint32_t * vectorOut, uint32_t longitud, uint32_t escalar);
+void productoEscalar16 (uint16_t * vectorIn, uint16_t * vectorOut, uint32_t longitud, uint16_t escalar);
+void productoEscalar12 (uint16_t * vectorIn, uint16_t * vectorOut, uint32_t longitud, uint16_t escalar);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -432,6 +434,45 @@ void productoEscalar32(uint32_t *vectorIn, uint32_t *vectorOut, uint32_t longitu
     for(uint32_t i = 0; i < longitud; i++)
     {
         vectorOut[i] = vectorIn[i] * escalar;
+    }
+    /* USER CODE END productoEscalar32*/
+}
+
+/**
+  * @brief  Esta funcion toma el puntero de un vector de entrada, el puntero de
+            un vector de salida, la longitud y un escalar y multiplica cada uno
+            de los valores del vector de entrada por el escalar y los guarda
+            en la respectiva posicion del vector de salida.
+  * @retval None
+  */
+void productoEscalar16 (uint16_t * vectorIn, uint16_t * vectorOut, uint32_t longitud, uint16_t escalar)
+{
+    /* USER CODE BEGIN productoEscalar32*/
+    for(uint32_t i = 0; i < longitud; i++)
+    {
+        vectorOut[i] = vectorIn[i] * escalar;
+    }
+    /* USER CODE END productoEscalar32*/
+}
+
+/**
+  * @brief  Esta funcion toma el puntero de un vector de entrada, el puntero de
+            un vector de salida, la longitud y un escalar y multiplica cada uno
+            de los valores del vector de entrada por el escalar y los guarda
+            en la respectiva posicion del vector de salida. Si el resultado es
+            mayor a 12 bits entonces satura el resultado.
+  * @retval None
+  */
+void productoEscalar12 (uint16_t * vectorIn, uint16_t * vectorOut, uint32_t longitud, uint16_t escalar)
+{
+    /* USER CODE BEGIN productoEscalar32*/
+    for(uint32_t i = 0; i < longitud; i++)
+    {
+        if((uint32_t)(vectorIn[i] * escalar) > 4095){
+        	vectorOut[i] = 4095;
+        }else{
+        	vectorOut[i] = vectorIn[i] * escalar;
+        }
     }
     /* USER CODE END productoEscalar32*/
 }
