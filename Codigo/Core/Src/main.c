@@ -409,13 +409,14 @@ void Error_Handler(void)
   *         sus valores en 0.
   * @retval None
   */
-void zeros (uint32_t * vector, uint32_t longitud)
+void zeros(uint32_t *vector, uint32_t longitud)
 {
-    /* USER CODE BEGIN zeros */
-    for(uint32_t i = 0; i < longitud; i++){
+    /* USER CODE BEGIN zeros*/
+    for(uint32_t i = 0; i < longitud; i++)
+    {
         vector[i] = 0;
     }
-    /* USER CODE END zeros */
+    /* USER CODE END zeros*/
 }
 
 /**
@@ -425,11 +426,14 @@ void zeros (uint32_t * vector, uint32_t longitud)
             en la respectiva posicion del vector de salida.
   * @retval None
   */
-void productoEscalar32 (uint32_t * vectorIn, uint32_t * vectorOut, uint32_t longitud, uint32_t escalar)
+void productoEscalar32(uint32_t *vectorIn, uint32_t *vectorOut, uint32_t longitud, uint32_t escalar)
 {
-    for(uint32_t i = 0; i < longitud; i++){
+    /* USER CODE BEGIN productoEscalar32*/
+    for(uint32_t i = 0; i < longitud; i++)
+    {
         vectorOut[i] = vectorIn[i] * escalar;
     }
+    /* USER CODE END productoEscalar32*/
 }
 
 #ifdef  USE_FULL_ASSERT
