@@ -56,10 +56,10 @@
     asm_zeros:            @ Etiqueta/nombre de la función.
         mov r2, 0         @ r2 = 0 
         asm_zeros_bucle:  @ Etiqueta de comienzo de bucle.
-    str r2, [r0]          @ Asigna 0 a la palabra en dirección r0.
-    add r0, 4             @ Pasa a la siguiente palabra/elemento en vector.
-    subs r1, 1            @ Resta 1 a la cantidad de elementos y actualiza flags de estado del procesador. En particular, estamos interesados en el flag Z.
-    bne asm_zeros_bucle   @ La instrucción se ejecuta mientras el resultado de r1 - 1 no sea cero (Z == 0).
+		    str r2, [r0]          @ Asigna 0 a la palabra en dirección r0.
+    		add r0, 4             @ Pasa a la siguiente palabra/elemento en vector.
+	    	subs r1, 1            @ Resta 1 a la cantidad de elementos y actualiza flags de estado del procesador. En particular, estamos interesados en el flag Z.
+    		bne asm_zeros_bucle   @ La instrucción se ejecuta mientras el resultado de r1 - 1 no sea cero (Z == 0).
     bx lr                 @ La instrucción de salto no se ejecutó porque Z == 1, volvemos a quién nos llamó.
 
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -72,17 +72,19 @@
 @	r2: Longitud
 @	r3: Escalar
 
-.thumb_func               @ Se avisa al emsablador que esta es una funcion
-    asm_productoEscalar32:@ Etiqueta/nombre de la función.
-        asm_escalar32_bucle:  @ Etiqueta de comienzo de bucle.
-    ldr r4, [r0]          @ Asigna a r4 el valor en la dirección r0.
-    mul r4, r4, r3        @ Multiplica el valor en r4 por el valor en r3 y lo guarda en r4
-    str r4, [r1]		  @ Guarda el valor de r4 en la direccion de r1
-    add r0, 4			  @ Pasa a la siguiente palabra/elemento en vector de entrada
-    add r1, 4			  @ Pasa a la siguiente palabra/elemento en vector de salida
-    subs r2, 1            @ Resta 1 a la cantidad de elementos y actualiza flags de estado del procesador. En particular, estamos interesados en el flag Z.
-    bne asm_escalar32_bucle   @ La instrucción se ejecuta mientras el resultado de r1 - 1 no sea cero (Z == 0).
-    bx lr                 @ La instrucción de salto no se ejecutó porque Z == 1, volvemos a quién nos llamó.
+.thumb_func               			@ Se avisa al emsablador que esta es una funcion
+    asm_productoEscalar32:			@ Etiqueta/nombre de la función.
+    	push {r4}					@ Guardo el valor de r4 en el stack
+        asm_escalar32_bucle:		@ Etiqueta de comienzo de bucle.
+    		ldr r4, [r0]          	@ Asigna a r4 el valor en la dirección r0.
+    		mul r4, r4, r3        	@ Multiplica el valor en r4 por el valor en r3 y lo guarda en r4
+	    	str r4, [r1]		  	@ Guarda el valor de r4 en la direccion de r1
+    		add r0, 4			  	@ Pasa a la siguiente palabra/elemento en vector de entrada
+    		add r1, 4			  	@ Pasa a la siguiente palabra/elemento en vector de salida
+	    	subs r2, 1            	@ Resta 1 a la cantidad de elementos y actualiza flags de estado del procesador. En particular, estamos interesados en el flag Z.
+    		bne asm_escalar32_bucle @ La instrucción se ejecuta mientras el resultado de r1 - 1 no sea cero (Z == 0).
+	    pop {r4}					@ Traigo el valor de r4 de vuelta del stack.
+    	bx lr       	          	@ La instrucción de salto no se ejecutó porque Z == 1, volvemos a quién nos llamó.
 
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 @ Prototipo en "C":
@@ -94,15 +96,17 @@
 @	r2: Longitud
 @	r3: Escalar
 
-.thumb_func               @ Se avisa al emsablador que esta es una funcion
-    asm_productoEscalar16:@ Etiqueta/nombre de la función.
-        asm_escalar16_bucle:  @ Etiqueta de comienzo de bucle.
-    ldr r4, [r0]          @ Asigna a r4 el valor en la dirección r0.
-    mul r4, r4, r3        @ Multiplica el valor en r4 por el valor en r3 y lo guarda en r4
-    str r4, [r1]		  @ Guarda el valor de r4 en la direccion de r1
-    add r0, 2			  @ Pasa a la siguiente palabra/elemento en vector de entrada
-    add r1, 2			  @ Pasa a la siguiente palabra/elemento en vector de salida
-    subs r2, 1            @ Resta 1 a la cantidad de elementos y actualiza flags de estado del procesador. En particular, estamos interesados en el flag Z.
-    bne asm_escalar16_bucle   @ La instrucción se ejecuta mientras el resultado de r1 - 1 no sea cero (Z == 0).
-    bx lr                 @ La instrucción de salto no se ejecutó porque Z == 1, volvemos a quién nos llamó.
+.thumb_func               			@ Se avisa al emsablador que esta es una funcion
+    asm_productoEscalar16:			@ Etiqueta/nombre de la función.
+	    push {r4}					@ Muevo el valor de r4 al stack
+        asm_escalar16_bucle:		@ Etiqueta de comienzo de bucle.
+		    ldrh r4, [r0]          	@ Asigna a r4 el valor en la dirección r0.
+		    mul r4, r4, r3        	@ Multiplica el valor en r4 por el valor en r3 y lo guarda en r4
+		    strh r4, [r1]		  	@ Guarda el valor de r4 en la direccion de r1
+    		add r0, 2			  	@ Pasa a la siguiente palabra/elemento en vector de entrada
+    		add r1, 2			  	@ Pasa a la siguiente palabra/elemento en vector de salida
+    		subs r2, 1            	@ Resta 1 a la cantidad de elementos y actualiza flags de estado del procesador. En particular, estamos interesados en el flag Z.
+    		bne asm_escalar16_bucle @ La instrucción se ejecuta mientras el resultado de r1 - 1 no sea cero (Z == 0).
+    	pop {r4}					@ Traigo el valor de r4 de vuelta del stack
+	    bx lr	                 	@ La instrucción de salto no se ejecutó porque Z == 1, volvemos a quién nos llamó.
 

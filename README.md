@@ -4,6 +4,20 @@
 ### Preguntas orientadoras
 
 1. Describa brevemente los diferentes perfiles de familias de microprocesadores/microcontroladores de ARM. Explique alguna de sus diferencias características.
+**Cortex-A**
+Procesadores de Aplicacion, diseñados para mayor rendimiento y uso de OS avanzados (Android, Linux, etc.). Pueden usar clocks de mayores velocidades (> 1 GHz) e incluyen  MMU. Poseen un pipeline de procesador de mayor largo.
+Usos: En dispositivos moviles, tablets, televisiones, etc.
+Desventajas: No estan diseñados para dar respuestas rapidas a eventos de hardware.
+
+**Cortex-R**
+Procesadores de Real-Time, son buenos para procesar datos. Corren a velocidad de clocks intermedias (entre 500MHz y 1GHz). Estan diseñados para responder bien a eventos de hardware. Poseen memoria que los provee de un comportamiento **determinista**. Poseen capacidades para que tengan mas fiabilidad (Error Correcting Code).
+Usos: Controladores de discos rigidos, modems, microcontroladores especializados para uso automotriz o industrial.
+Desventajas: Diseños bastante complejos y consumos de energia elevados.
+
+**Cortex-M**
+Procesadores diseñados para el mercado general de microcontroladores donde los requerimientos de procesamiento son menores y necesitan que el consumo de energia sea poco. Diseñados con un pipeline relativamente corto, siendo de 2 pasos en los M0+, de 3 pasos en los M0, M3 y M4 y en los M7 de 6 pasos por su requerimiento de mayor desepeño (Aun en este ultimo caso es bastante mas corto que los procesadores pensados para aplicaciones). Debido a el pipeline mas corto y limites en el clock del procesador presentan un poder de procesamiento menor a los Cortex-M y a los Cortex-A. Fueron diseñados para atender rapidamente a interrupciones y tener un compartamiento determinista. Esto se debe a un Nested Vector Interrupt Controller apareado con el bloque de control del procesador. Son diseñados mayormente para poder ser programados en C.
+Usos: En sensores, chipsets de comunicacion wireless y como controlador para subsistemas de procesadores de aplicacion mas complejos.
+Desventajas: Menor poder y velocidad de procesamiento que las otras familias, sets de instrucciones mas reducidos. 
 
 #### Cortex M
 
