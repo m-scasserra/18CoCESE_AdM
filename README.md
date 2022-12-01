@@ -22,6 +22,29 @@ Desventajas: Menor poder y velocidad de procesamiento que las otras familias, se
 #### Cortex M
 
 1. Describa brevemente las diferencias entre las familias de procesadores Cortex M0, M3 y M4.
+Set de instrucciones
+M0 y M0+ poseen sets de instrucciones pequeños por lo cual la densidad del codigo es mejor. Son compatibles con la mayor parte de las instrucciones Thumb y con algunas del Thumb-2.
+M3 y M4 expanden sobre este set de instrucciones (utilizando mayormente instrucciones de 32 bits haciendo que puedan utilizar mas eficientemente los registros). Poseen compatibiliad con todas las intrucciones Thumb y Thumb-2. M4 incluye instrucciones Single Instruction Multiple Data e instrucciones de aritmetica saturada para realizar procesamiento de señales digital.
+
+Arquitectura
+M0 y M0+ utilizan arquitectura Von Neumann.
+M3 y M4 utilizan arquitectura Harvard.
+
+Systick
+M0 y M0+ la implementacion de un systick es opcional.
+M3 y M4 incluyen la implementacion del systick.
+
+Energia
+M0 y M0+ debido a su bajo numero de compuertas logicas su consumo energetico es el minimo.
+M3 y M4 como tienen mayor poder de procesamiento y mayor numero de compuertas logicas su consumo aumenta.
+
+MMU
+M0 no tiene MMU.
+M0+, M3 y M4 poseen la **posibilidad** de tener MMU.
+
+Cache
+M0, M0+ y M3 no tienen memoria cache.
+M4 tiene la **posibilidad** de tener memoria cache.
 
 2. ¿Por qué se dice que el set de instrucciones Thumb permite mayor densidad de código? Explique
 
@@ -33,6 +56,19 @@ Desventajas: Menor poder y velocidad de procesamiento que las otras familias, se
 
 6. Describa los diferentes modos de privilegio y operación del Cortex M, sus relaciones y como se conmuta de uno al otro. Describa un ejemplo en el que se pasa del modo privilegiado a no priviligiado y nuevamente a privilegiado.
 
+El procesador Cortex-M tiene 2 modos de operacion:
+    Thumb state: El procesador actualmente esta corriendo instrucciones del codigo.
+    Debug state: Algun evento (por el debugger o un breakpoint) de debug pauso al procesador y no esta corriendo instrucciones.
+
+En el modo Thumb se pueden tener 2 modos de opercion:
+    Thread Mode: Se encuentra ejecutando codigo de aplicacion.
+    Handler Mode: Se encuentra ejecutando alguna rutina de excepcion (Como es el ISR)
+
+En el modo Thread se pueden tener 2 niveles de privilegio:
+    Privileged Access: La aplicacion tiene acceso a toda la memoria y puede leer y modificarla. El Handler Mode siempre tiene este nivel de privilegio.
+    Unprivileged Access: La aplicacion no tiene permisos para acceder a partes criticas de la memoria para evitar que esta pueda corromperla. Si esta aplicacion crashea, solo se veria afectada su porcion de la memoria y no afectaria a otras aplicaciones. 
+
+Una aplicacion puede pasar a Thread Mode modificando el registro de CONTROL (nPRIV en 0 para Privileged Mode y en 1 para Unprivileged Mode) en cualquier momento de su ejecucion pero este solo no puede volver. Si se quiere volver al Privileged Mode se debe hacer mediante el Handler Mode ya que el si tiene los privilegios necesarios para modificar el registro CONTROL.
 7. ¿Qué se entiende por modelo de registros ortogonal? Dé un ejemplo
 
 8. ¿Qué ventajas presenta el uso de intrucciones de ejecución condicional (IT)? Dé un ejemplo
