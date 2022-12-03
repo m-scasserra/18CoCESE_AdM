@@ -48,9 +48,20 @@ M4 tiene la **posibilidad** de tener memoria cache.
 
 2. ¿Por qué se dice que el set de instrucciones Thumb permite mayor densidad de código? Explique
 
+Debido a que los procesadores soportan tanto instrucciones de 16-bits y de 32-bits los programas pueden lograr los mismos resultados en una menor cantidad de instrucciones. Esto se logra mediante caracteristicas como varios modos de direccionamientos de memoria, multiples accesos de memoria mediante una sola instruccion, etc.
+
 3. ¿Qué entiende por arquitectura load-store? ¿Qué tipo de instrucciones no posee este tipo de arquitectura?
 
+Para operar sobre un dato es necesario que este sea copiado de la memoria a un registro para poder recien ser modificado y despues se tenga que copiar del registro a la memoria. Debido a esto es se conoce este tipo de arquitectura como load-store. Las instrucciones se separan en instrucciones de movimiento (de memoria al registro o viceversa) y de operaciones (que se hacen entre registros o entre registros y valores).
+
 4. ¿Cómo es el mapa de memoria de la familia?
+
+El bus de direccionamiento del procesador es de 32 bits por lo cual soporta un mapa de memoria de hasta 4 GB. Por mas que no sea neceseario para sistemas embebidos esto garantiza compatibilidad futura y posibles mejoras.
+El mapa delimita diferentes areas para funcionalidades especificas como:
+CODE region
+SRAM region
+Perifericos
+Control interno del procesador y funciones de debuging
 
 5. ¿Qué ventajas presenta el uso de los “shadowed pointers” del PSP y el MSP?
 
@@ -69,6 +80,7 @@ En el modo Thread se pueden tener 2 niveles de privilegio:
     Unprivileged Access: La aplicacion no tiene permisos para acceder a partes criticas de la memoria para evitar que esta pueda corromperla. Si esta aplicacion crashea, solo se veria afectada su porcion de la memoria y no afectaria a otras aplicaciones. 
 
 Una aplicacion puede pasar a Thread Mode modificando el registro de CONTROL (nPRIV en 0 para Privileged Mode y en 1 para Unprivileged Mode) en cualquier momento de su ejecucion pero este solo no puede volver. Si se quiere volver al Privileged Mode se debe hacer mediante el Handler Mode ya que el si tiene los privilegios necesarios para modificar el registro CONTROL.
+
 7. ¿Qué se entiende por modelo de registros ortogonal? Dé un ejemplo
 
 8. ¿Qué ventajas presenta el uso de intrucciones de ejecución condicional (IT)? Dé un ejemplo
