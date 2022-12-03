@@ -61,14 +61,20 @@ static void MX_GPIO_Init(void);
 static void MX_ETH_Init(void);
 static void MX_USART3_UART_Init(void);
 static void MX_USB_OTG_FS_PCD_Init(void);
-void zeros (uint32_t * vector, uint32_t longitud);
-void productoEscalar32 (uint32_t * vectorIn, uint32_t * vectorOut, uint32_t longitud, uint32_t escalar);
-void productoEscalar16 (uint16_t * vectorIn, uint16_t * vectorOut, uint32_t longitud, uint16_t escalar);
-void productoEscalar12 (uint16_t * vectorIn, uint16_t * vectorOut, uint32_t longitud, uint16_t escalar);
+void zeros(uint32_t *vector, uint32_t longitud);
+void productoEscalar32(uint32_t *vectorIn, uint32_t *vectorOut, uint32_t longitud, uint32_t escalar);
+void productoEscalar16(uint16_t *vectorIn, uint16_t *vectorOut, uint32_t longitud, uint16_t escalar);
+void productoEscalar12(uint16_t *vectorIn, uint16_t *vectorOut, uint32_t longitud, uint16_t escalar);
+void filtroVentana10(uint16_t *vectorIn, uint16_t *vectorOut, uint32_t longitudVectorIn);
+void pack32to16(int32_t *vectorIn, int16_t *vectorOut, uint32_t longitud);
+
 /* USER CODE BEGIN PFP */
-void asm_zeros (uint32_t * vector, uint32_t longitud);   // Agregar esto
-void asm_productoEscalar32 (uint32_t *vectorIn, uint32_t *vectorOut, uint32_t longitud, uint32_t escalar);   // Agregar esto
-void asm_productoEscalar16 (uint16_t *vectorIn, uint16_t *vectorOut, uint32_t longitud, uint32_t escalar);   // Agregar esto
+void asm_zeros(uint32_t *vector, uint32_t longitud);   // Agregar esto
+void asm_productoEscalar32(uint32_t *vectorIn, uint32_t *vectorOut, uint32_t longitud, uint32_t escalar);   // Agregar esto
+void asm_productoEscalar16(uint16_t *vectorIn, uint16_t *vectorOut, uint32_t longitud, uint32_t escalar);   // Agregar esto
+void asm_productoEscalar12(uint16_t *vectorIn, uint16_t *vectorOut, uint32_t longitud, uint16_t escalar);
+void asm_filtroVentana10(uint16_t *vectorIn, uint16_t *vectorOut, uint32_t longitudVectorIn);
+void asm_pack32to16(int32_t *vectorIn, int16_t *vectorOut, uint32_t longitud);
 
 /* USER CODE END PFP */
 
@@ -165,6 +171,25 @@ int main(void)
   PrivilegiosSVC ();
 
   const uint32_t Resultado = asm_sum (5, 3);
+
+  uint16_t vectMultIn[3] = {0, 1, 2};
+  uint16_t vectMultOut[3] = {0, 0, 0};
+
+  uint32_t vectPack[2] = {0xFFFF0000, 0x0000FFFF};
+  uint16_t vectUnpack[2] = {0, 0};
+
+  uint16_t vectIn[20] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19};
+
+  uint16_t vectOut[20] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+
+  asm_productoEscalar12(&vectMultIn, &vectMultOut, 3, 1000);
+
+  filtroVentana10(&vectIn, &vectOut, 20);
+
+  asm_pack32to16(&vectPack, &vectUnpack, 2);
+
+  vectIn[1] = 1;
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -471,13 +496,67 @@ void productoEscalar12 (uint16_t * vectorIn, uint16_t * vectorOut, uint32_t long
     /* USER CODE BEGIN productoEscalar32*/
     for(uint32_t i = 0; i < longitud; i++)
     {
-        if((uint32_t)(vectorIn[i] * escalar) > 4095){
+        if((uint32_t)(vectorIn[i] * escalar) > 4095)
+        {
         	vectorOut[i] = 4095;
-        }else{
+        }else
+        {
         	vectorOut[i] = vectorIn[i] * escalar;
         }
     }
     /* USER CODE END productoEscalar32*/
+}
+
+/**
+  * @brief  Esta funcion toma el puntero de un vector de entrada, el puntero de
+            un vector de salida, la longitud y un escalar y multiplica cada uno
+            de los valores del vector de entrada por el escalar y los guarda
+            en la respectiva posicion del vector de salida. Si el resultado es
+            mayor a 12 bits entonces satura el resultado.
+  * @retval None
+  */
+void filtroVentana10(uint16_t *vectorIn, uint16_t *vectorOut, uint32_t longitudVectorIn)
+{
+	/* USER CODE BEGIN filtroVentana10*/
+	uint32_t sumaTemp = 0;
+	for(uint32_t indVectOut = 0; indVectOut < longitudVectorIn; indVectOut ++)
+	{
+		sumaTemp = 0;
+		for(uint32_t numIndBajo = 1; numIndBajo < 6; numIndBajo ++)
+		{
+			if(!((int32_t)(indVectOut - numIndBajo) < 0))
+			{
+				sumaTemp = sumaTemp + vectorIn[indVectOut - numIndBajo];
+			}
+		}
+		for(uint32_t numIndAlto = 1; numIndAlto < 6; numIndAlto ++)
+		{
+			if(!((int32_t)(indVectOut + numIndAlto) > longitudVectorIn))
+			{
+				sumaTemp = sumaTemp + vectorIn[indVectOut + numIndAlto];
+			}
+		}
+		sumaTemp = sumaTemp + vectorIn[indVectOut];
+		vectorOut[indVectOut] = sumaTemp / 11;
+	}
+	/* USER CODE END filtroVentana10*/
+}
+
+/**
+  * @brief  Esta funcion toma el puntero de un vector de entrada, el puntero de
+            un vector de saliday la longitud y empaqueta cada valor de 32 bits
+            del vector de entrada en los 16 bits del vector de salida,
+            efectivamente removiendo presicion del valor.
+  * @retval None
+  */
+void pack32to16(int32_t *vectorIn, int16_t *vectorOut, uint32_t longitud)
+{
+	/* USER CODE BEGIN pack32to16*/
+	for(uint32_t i = 0; i < longitud; i++)
+	{
+		vectorOut[i] = vectorIn[i] >> 16;
+	}
+	/* USER CODE END pack32to16*/
 }
 
 #ifdef  USE_FULL_ASSERT
