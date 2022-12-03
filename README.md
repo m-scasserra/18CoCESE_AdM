@@ -65,6 +65,16 @@ Control interno del procesador y funciones de debuging
 
 5. ¿Qué ventajas presenta el uso de los “shadowed pointers” del PSP y el MSP?
 
+MSP: Main Stack Pointer es el stack pointer por defecto. Se utiliza en el modo Thread cuando el CONTROL bit[1] (SPSEL) es 0 y en el modo Handler se utiiza siempre.
+PSP: Program Stack Pointer se utiliza en el Thread mode cuando el CONTROL bit[1] (SPSEL) es 1.
+
+Si no utilizamos un OS podemos usar siempre el MSP e ignorar el PSP.
+Si usamos un OS, el MSP es utlizado por el manejadores de excepciones mientras que el PSP es utilizado por las aplicaciones teniendo cada una un espacio propio del stack. El cambio de contexto del OS se encarga de cambiar el valor del PSP.
+
+Las ventajas son:
+En caso de producirse algun error en una aplicacion que corrompa la memoria, este solo afectaria al stack de la misma. El OS y otras aplicaciones no se verian afectadas idealmente.
+El OS puede utilizar el MMU para definir la region del stack que las aplicaciones pueden utilizar, produciendo una excepcion de MemManage en caso de que el programa produsca un stack overflow. 
+
 6. Describa los diferentes modos de privilegio y operación del Cortex M, sus relaciones y como se conmuta de uno al otro. Describa un ejemplo en el que se pasa del modo privilegiado a no priviligiado y nuevamente a privilegiado.
 
 El procesador Cortex-M tiene 2 modos de operacion:
