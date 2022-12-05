@@ -67,14 +67,11 @@ void productoEscalar16(uint16_t *vectorIn, uint16_t *vectorOut, uint32_t longitu
 void productoEscalar12(uint16_t *vectorIn, uint16_t *vectorOut, uint32_t longitud, uint16_t escalar);
 void filtroVentana10(uint16_t *vectorIn, uint16_t *vectorOut, uint32_t longitudVectorIn);
 void pack32to16(int32_t *vectorIn, int16_t *vectorOut, uint32_t longitud);
+uint32_t max(int32_t *vectorIn, uint32_t longitud);
+void downsampleM(int32_t *vectorIn, int32_t *vectorOut, uint32_t longitud, uint32_t N);
+void invertir(uint16_t *vector, uint32_t longitud);
 
 /* USER CODE BEGIN PFP */
-void asm_zeros(uint32_t *vector, uint32_t longitud);   // Agregar esto
-void asm_productoEscalar32(uint32_t *vectorIn, uint32_t *vectorOut, uint32_t longitud, uint32_t escalar);   // Agregar esto
-void asm_productoEscalar16(uint16_t *vectorIn, uint16_t *vectorOut, uint32_t longitud, uint32_t escalar);   // Agregar esto
-void asm_productoEscalar12(uint16_t *vectorIn, uint16_t *vectorOut, uint32_t longitud, uint16_t escalar);
-void asm_filtroVentana10(uint16_t *vectorIn, uint16_t *vectorOut, uint32_t longitudVectorIn);
-void asm_pack32to16(int32_t *vectorIn, int16_t *vectorOut, uint32_t longitud);
 
 /* USER CODE END PFP */
 
@@ -179,6 +176,7 @@ int main(void)
   uint16_t vectUnpack[2] = {0, 0};
 
   uint16_t vectIn[20] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19};
+  uint32_t vectIn2[20] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19};
 
   uint16_t vectOut[20] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
@@ -187,6 +185,13 @@ int main(void)
   filtroVentana10(&vectIn, &vectOut, 20);
 
   asm_pack32to16(&vectPack, &vectUnpack, 2);
+
+  uint32_t maximoresultado = 0;
+  maximoresultado = asm_max(&vectIn2, 20);
+  uint32_t downsamplevect[16];
+  downsampleM(&vectIn2, &downsamplevect, 20, 5);
+  asm_invertir(&vectIn, 20);
+
 
   vectIn[1] = 1;
 
@@ -544,7 +549,7 @@ void filtroVentana10(uint16_t *vectorIn, uint16_t *vectorOut, uint32_t longitudV
 
 /**
   * @brief  Esta funcion toma el puntero de un vector de entrada, el puntero de
-            un vector de saliday la longitud y empaqueta cada valor de 32 bits
+            un vector de salida y la longitud y empaqueta cada valor de 32 bits
             del vector de entrada en los 16 bits del vector de salida,
             efectivamente removiendo presicion del valor.
   * @retval None
@@ -558,6 +563,79 @@ void pack32to16(int32_t *vectorIn, int16_t *vectorOut, uint32_t longitud)
 	}
 	/* USER CODE END pack32to16*/
 }
+
+/**
+  * @brief  Esta funcion toma el puntero de un vector de entrada y la longitud
+  * 		y devuelve la posicion del elemento mas grande.
+  * @retval uint32_t posMax siendo la posicion en el vector del elemento mas grande
+  */
+uint32_t max(int32_t *vectorIn, uint32_t longitud)
+{
+	/* USER CODE BEGIN max*/
+	uint32_t valorMax = vectorIn[0];
+	uint32_t posMax = 0;
+	if(longitud > 1)
+	{
+		for(uint32_t i = 1; i < longitud; i++)
+		{
+			if(vectorIn[i] > valorMax)
+			{
+				valorMax = vectorIn[i];
+				posMax = i;
+			}
+		}
+	}
+	return posMax;
+	/* USER CODE END max*/
+}
+
+/**
+  * @brief  Esta funcion toma el puntero de un vector de entrada, el puntero
+  * 		de un vector de salida, la longitud y un entero N. Copia los valores
+  * 		del vector de entrada en el vector de salida descartando 1 cada N
+  * 		valores.
+  * @retval None
+  */
+void downsampleM(int32_t *vectorIn, int32_t *vectorOut, uint32_t longitud, uint32_t N)
+{
+	/* USER CODE BEGIN downsampleM*/
+	uint32_t contador = 1;
+	uint32_t indiceSalida = 0;
+	for(uint32_t i = 0; i < longitud; i++)
+	{
+		if(contador < N)
+		{
+			vectorOut[indiceSalida] = vectorIn[i];
+			indiceSalida = indiceSalida + 1;
+			contador = contador + 1;
+		}else
+		{
+			contador = 1;
+		}
+	}
+	/* USER CODE END downsampleM*/
+}
+
+/**
+  * @brief  Esta funcion toma el puntero de un vector de entrada y la longitud
+  * 		e invierte el orden de los valores.
+  * @retval None
+  */
+void invertir(uint16_t *vector, uint32_t longitud)
+{
+	/* USER CODE BEGIN invertir*/
+	uint16_t auxBot = 0;
+	uint16_t auxTop = 0;
+	for(uint32_t i = 0; i < (longitud >> 1); i++)
+	{
+		auxBot = vector[i];
+		auxTop = vector[longitud - 1 - i];
+		vector[i] = auxTop;
+		vector[longitud - 1 - i] = auxBot;
+	}
+	/* USER CODE END invertir*/
+}
+
 
 #ifdef  USE_FULL_ASSERT
 /**

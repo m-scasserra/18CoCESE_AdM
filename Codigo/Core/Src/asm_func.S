@@ -11,6 +11,10 @@
 .global asm_productoEscalar12
 .global asm_filtroVentana10
 .global asm_pack32to16
+.global asm_max
+.global asm_downsampleM
+.global asm_invertir
+#define MAX_SAT 4095
 
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 @ Prototipo en "C":
@@ -127,12 +131,12 @@
     asm_productoEscalar12:			@ Etiqueta/nombre de la función.
 	    push {r4,r5}				@ Muevo el valor de r4 al stack
         asm_escalar12_bucle:		@ Etiqueta de comienzo de bucle.
-		    movw r5, #1023
+		    movw r5, MAX_SAT		@ Muevo el valor #4095 a r5
 		    ldrh r4, [r0]          	@ Asigna a r4 el valor en la dirección r0.
 		    mul r4, r4, r3        	@ Multiplica el valor en r4 por el valor en r3 y lo guarda en r4
 		    subs r5, r5, r4			@ Resto el valor en r5 el valor en r5 y lo guardo en r5 y actualizo los flags de estado del procesador
 		    ITTE MI
-		    movwmi r5, #1023		@ Si el flag de negativo es 1, guardo el valor #1023 en r5
+		    movwmi r5, #4095		@ Si el flag de negativo es 1, guardo el valor #4095 en r5
 		    strhmi r5, [r1]			@ Si el flag de negativo es 1, guarda el valor de r5 en la direacion de r1
 		    strhpl r4, [r1]		  	@ si el flag de negativo es 0 ,guarda el valor de r4 en la direccion de r1
 
@@ -182,3 +186,81 @@
 			bne asm_pack32to16_bucle	@ La instrucción de salto no se ejecutó porque Z == 1, volvemos a quién nos llamó.
 		pop {r4}						@ Traigo el valor de r4 de vuelta del stack
 	    bx lr	                 		@ La instrucción de salto no se ejecutó porque Z == 1, volvemos a quién nos llamó.
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+@ Prototipo en "C":
+@   max(int32_t *vectorIn, uint32_t longitud);
+@
+@ Parametros recibidos:
+@   r0: Dirección de memoria de inicio del vector de entrada.
+@   r1: Longitud
+@	r2: Valor del elemento mas alto
+@	r3: Indice del elemento mas alto
+@	r4: Indice del valor que comparo con el mas alto
+@	r5: Valor del elemento que comparo con el mas altos
+
+.thumb_func
+	asm_max:
+		push {r4, r5}			@ Guardo en el stack los valores de r4 y r5
+		ldr r2, [r0], #4		@ Cargo en r2 el valor en la direccion en r0 y le sumo 4 a la direccion
+		mov r3, #0				@ Cargo en r3 el valor #0
+		mov r4, #0				@ Cargo en r4 el valor #0
+		sub r1, #1				@ Resto #1 al valor de r1
+		cmp r1, #1				@ Comparo r1 con el valor #1 y actualizo los flags de estado
+		beq asm_max_fin			@ Si r1 es igual a #1 salto al asm_max_fin
+		asm_max_bucle:			@ Etiqueta de bucle
+			ldr r5, [r0], #4	@ Cargo en r5 el valor den la direccion en r0 y le sumo 4 a la direccion
+			add r4, #1			@ Le sumo #1 a r4 #1
+			cmp r5, r2			@ Comparo r5 y r2 y actualizo los flags de estado
+			ITT pl				@ Instrucciones condicionales si la comparacion me da negativa
+			movpl r2, r5		@ Muevo a r2 el valor de r5
+			movpl r3, r4		@ Muevo a r3 el valor de r4
+
+			subs r1, #1			@ Resto #1 al valor en r1 y actualizo los flags de estado
+			bne asm_max_bucle	@ Si el resultado de la operacion anterior no me da #0 salto a asm_max_bucle
+	asm_max_fin:
+		mov r0, r3				@ Muevo el valor de r3 y a r0
+		pop {r4, r5}			@ Saco del stack los valores anteriores de r4 y r5
+		bx lr					@ Vuelvo al programa principal
+
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+@ Prototipo en "C":
+@   pack32to16(int32_t *vectorIn, int16_t *vectorOut, uint32_t longitud);
+@
+@ Parametros recibidos:
+@   r0: Dirección de memoria de inicio del vector de entrada.
+@   r1: Dirección de memoria de inicio del vector de salida.
+@	r2: Longitud
+
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+@ Prototipo en "C":
+@   invertir(uint16_t *vector, uint32_t longitud);
+@
+@ Parametros recibidos:
+@   r0: Dirección de memoria de inicio del vector de entrada.
+@   r1: Longitud
+@	r2: Indice del elemento alto
+@	r3: Auxiliar para el elemento bajo
+@	r4: Auxiliar para el elemento alto
+
+.thumb_func
+	asm_invertir:
+		push {r4}
+		mov r2, r1
+		sub r2, #1
+		lsr r1, 1
+
+		asm_invertir_bucle:
+			ldrh r3, [r0]
+			ldrh r4, [r0, r2, LSL 1]
+			strh r4, [r0]
+			strh r3, [r0, r2, LSL 1]
+			add r0, #2
+			sub r2, #2
+			subs r1, #1
+			bne asm_invertir_bucle
+
+		pop {r4}
+		bx lr
