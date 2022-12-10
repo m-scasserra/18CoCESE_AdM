@@ -70,6 +70,7 @@ void pack32to16(int32_t *vectorIn, int16_t *vectorOut, uint32_t longitud);
 uint32_t max(int32_t *vectorIn, uint32_t longitud);
 void downsampleM(int32_t *vectorIn, int32_t *vectorOut, uint32_t longitud, uint32_t N);
 void invertir(uint16_t *vector, uint32_t longitud);
+void eco(int16_t *vectorIn, int16_t *vectorOut, uint32_t longitud);
 
 /* USER CODE BEGIN PFP */
 
@@ -169,6 +170,16 @@ int main(void)
 
   const uint32_t Resultado = asm_sum (5, 3);
 
+  int16_t vectorEcoin[4096] = {0};
+  int16_t vectorEcoout[4096] = {0};
+  vectorEcoin[0] = 10;
+  vectorEcoin[1] = -10;
+  vectorEcoin[881] = 77;
+  vectorEcoin[882] = 100;
+  vectorEcoin[883] = 100;
+  vectorEcoin[4095] = 40;
+  vectorEcoin[3213] = 20;
+
   uint16_t vectMultIn[3] = {0, 1, 2};
   uint16_t vectMultOut[3] = {0, 0, 0};
 
@@ -182,7 +193,7 @@ int main(void)
 
   asm_productoEscalar12(&vectMultIn, &vectMultOut, 3, 1000);
 
-  filtroVentana10(&vectIn, &vectOut, 20);
+  asm_filtroVentana10(&vectIn, &vectOut, 20);
 
   asm_pack32to16(&vectPack, &vectUnpack, 2);
 
@@ -191,6 +202,9 @@ int main(void)
   uint32_t downsamplevect[16];
   downsampleM(&vectIn2, &downsamplevect, 20, 5);
   asm_invertir(&vectIn, 20);
+
+  asm_eco(&vectorEcoin, &vectorEcoout, 4096);
+
 
 
   vectIn[1] = 1;
@@ -527,18 +541,16 @@ void filtroVentana10(uint16_t *vectorIn, uint16_t *vectorOut, uint32_t longitudV
 	for(uint32_t indVectOut = 0; indVectOut < longitudVectorIn; indVectOut ++)
 	{
 		sumaTemp = 0;
-		for(uint32_t numIndBajo = 1; numIndBajo < 6; numIndBajo ++)
+		for(uint32_t numInd = 1; numInd < 6; numInd ++)
 		{
-			if(!((int32_t)(indVectOut - numIndBajo) < 0))
+			if(!((int32_t)(indVectOut - numInd) < 0))
 			{
-				sumaTemp = sumaTemp + vectorIn[indVectOut - numIndBajo];
+				sumaTemp = sumaTemp + vectorIn[indVectOut - numInd];
 			}
-		}
-		for(uint32_t numIndAlto = 1; numIndAlto < 6; numIndAlto ++)
-		{
-			if(!((int32_t)(indVectOut + numIndAlto) > longitudVectorIn))
+
+			if(!((int32_t)(indVectOut + numInd) > longitudVectorIn))
 			{
-				sumaTemp = sumaTemp + vectorIn[indVectOut + numIndAlto];
+				sumaTemp = sumaTemp + vectorIn[indVectOut + numInd];
 			}
 		}
 		sumaTemp = sumaTemp + vectorIn[indVectOut];
@@ -634,6 +646,24 @@ void invertir(uint16_t *vector, uint32_t longitud)
 		vector[longitud - 1 - i] = auxBot;
 	}
 	/* USER CODE END invertir*/
+}
+
+/**
+  * @brief  Esta funcion toma el puntero de un vector de entrada el puntero a
+  * 		un vector de salida y su longitud e introduce un eco de la mitad
+  * 		de un valor con un offset de 882 posiciones en el vector de salida.
+  * @retval None
+  */
+void eco(int16_t *vectorIn, int16_t *vectorOut, uint32_t longitud)
+{
+	for(uint16_t i = 0; i < 882; i++)
+	{
+		vectorOut[i] = vectorIn[i];
+	}
+	for(uint16_t i = 882; i < longitud; i ++)
+	{
+		vectorOut[i] = vectorIn[i] + (vectorIn[i - 882] / 2);
+	}
 }
 
 
