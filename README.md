@@ -189,25 +189,25 @@ Debido a la naturaleza de la aritmética binaria, si una operación supera la ca
 Para evitar esto es posible implementar aritmética saturada. Esto hace que si el numero supero los bits que esta manejando este quedaría con el mayor o menor numero posible dependiendo de si es signado o no.
 
 Ej:
-  Sin signar
-  255  0b 11111111
-+ 1    0b 00000001
-  256  0b100000000  ->	0    0b00000000
+Sin signar  
+255   0b 11111111  
+1  +  0b 00000001  
+256   0b100000000  ->	0    0b00000000  
 
-  Signado
-  127  0b 01111111
-+ 1    0b 00000001
-  -128 0b 10000000  ->	-128 0b10000000
+Signado  
+127   0b 01111111  
+1  +  0b 00000001  
+-128  0b 10000000  ->	-128 0b10000000  
   
-  Aritmética saturada sin signar
-  255  0b 11111111
-+ 1    0b 00000001
-  255  0b 11111111  ->	255  0b11111111
+Aritmética saturada sin signar  
+255   0b 11111111  
+1  +  0b 00000001  
+255   0b 11111111  ->	255  0b11111111  
 
-  Aritmética saturada signada
-  127  0b 01111111
-+ 1    0b 00000001
-  127  0b 01111111  ->	127  0b01111111
+Aritmética saturada signada  
+127   0b 01111111  
+1  +  0b 00000001  
+127   0b 01111111  ->	127  0b01111111  
 
 
 4. Describa brevemente la interfaz entre assembler y C ¿Cómo se reciben los argumentos de las funciones? ¿Cómo se devuelve el resultado? ¿Qué registros deben guardarse en la pila antes de ser modificados?
@@ -227,9 +227,9 @@ Ej:
 
 SHADD16 R0, R1		Hace la suma signada de 2 valores de 16 bits y divide el resultado por 2
 
-R0	50	|	100  Valor original de R0
-R1	40	|	 60  Valor original de R1
-+	90	|	160  Suma de R0 + R1
-/	45	|	 80  Divide cada uno de los resultado por 2
+R0  50	||	100  Valor original de R0  
+R1  40	||	 60  Valor original de R1  
+\+   90	||	160  Suma de R0 + R1  
+/   45	||	 80  Divide cada uno de los resultado por 2  
 ___________________________
-R0	45	|	 80  Valor final de R0
+R0	45	||	 80  Valor final de R0  
