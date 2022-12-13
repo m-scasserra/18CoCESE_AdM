@@ -249,7 +249,7 @@ Debido a la naturaleza de la aritmética binaria, si una operación supera la ca
 Para evitar esto es posible implementar aritmética saturada. Esto hace que si el numero supero los bits que esta manejando este quedaría con el mayor o menor numero posible dependiendo de si es signado o no.
 
 Ej:
-Sin signar
+**Sin signar**
 
 |Operación suma|Decimal|Binario|
 |:---|---:|---:|
@@ -258,21 +258,33 @@ Sin signar
 |Resultado esperado|256|100000000|
 |Resultado obtenido|0| 00000000|  
 
-Signado  
-127   0b 01111111  
-1  +  0b 00000001  
--128  0b 10000000  ->	-128 0b10000000  
+**Signado** 
+
+|Operación suma|Decimal|Binario|
+|:---|---:|---:|
+|Numero 1|127|01111111|  
+|Numero 2|1|00000001|  
+|Resultado esperado|128|0100000000|
+|Resultado obtenido|-128| 10000000|   
   
-Aritmética saturada sin signar  
-255   0b 11111111  
-1  +  0b 00000001  
-255   0b 11111111  ->	255  0b11111111  
+**Aritmética saturada sin signar**  
 
-Aritmética saturada signada  
-127   0b 01111111  
-1  +  0b 00000001  
-127   0b 01111111  ->	127  0b01111111  
+|Operación suma|Decimal|Binario|
+|:---|---:|---:|
+|Numero 1|255|11111111|  
+|Numero 2|1|00000001|  
+|Resultado esperado|256|100000000|
+|Resultado obtenido|255| 11111111|
 
+
+**Aritmética saturada signada**  
+
+|Operación suma|Decimal|Binario|
+|:---|---:|---:|
+|Numero 1|127|01111111|  
+|Numero 2|1|00000001|  
+|Resultado esperado|128|0100000000|
+|Resultado obtenido|127| 01111111|  
 
 4. Describa brevemente la interfaz entre assembler y C ¿Cómo se reciben los argumentos de las funciones? ¿Cómo se devuelve el resultado? ¿Qué registros deben guardarse en la pila antes de ser modificados?
 
