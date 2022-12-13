@@ -287,9 +287,9 @@ Ej:
 
 SHADD16 R0, R1		Hace la suma signada de 2 valores de 16 bits y divide el resultado por 2
 
-R0  50	||	100  Valor original de R0  
-R1  40	||	 60  Valor original de R1  
-\+   90	||	160  Suma de R0 + R1  
-/   45	||	 80  Divide cada uno de los resultado por 2  
-___________________________
-R0  45	||	 80  Valor final de R0  
+|R0 | 50 |100 | Valor original de R0  |
+|:---:|:---:|:---:|:---|
+|R1 | 40 | 60 | Valor original de R1  |
+|+  | 90 |160 | Suma de R0 + R1 |
+|/  | 45 | 80 | Divide cada uno de los resultado por 2  |
+|R0 | 45 | 80 | Valor final de R0 | 
