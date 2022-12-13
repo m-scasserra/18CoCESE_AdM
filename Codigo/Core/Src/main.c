@@ -78,6 +78,12 @@ void eco(int16_t *vectorIn, int16_t *vectorOut, uint32_t longitud);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+int __io_putchar (int ch)
+{
+    HAL_UART_Transmit (&huart3, (uint8_t *)&ch, 1, HAL_MAX_DELAY);
+    return ch;
+}
+
 static void PrivilegiosSVC (void)
 {
     // Obtiene valor del registro de 32 bits del procesador llamado "control".
@@ -158,6 +164,8 @@ int main(void)
 
   /* USER CODE BEGIN SysInit */
 
+  // Activa contador de ciclos (iniciar una sola vez)
+  DWT->CTRL |= 1 << DWT_CTRL_CYCCNTENA_Pos;
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
@@ -183,29 +191,50 @@ int main(void)
   uint16_t vectMultIn[3] = {0, 1, 2};
   uint16_t vectMultOut[3] = {0, 0, 0};
 
-  uint32_t vectPack[2] = {0xFFFF0000, 0x0000FFFF};
-  uint16_t vectUnpack[2] = {0, 0};
+  int32_t vectPack[2] = {0xFFF0000, 0x000FFFF};
+  int16_t vectUnpack[2] = {0, 0};
 
   uint16_t vectIn[20] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19};
-  uint32_t vectIn2[20] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19};
+  int32_t vectIn2[20] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19};
 
   uint16_t vectOut[20] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
-  asm_productoEscalar12(&vectMultIn, &vectMultOut, 3, 1000);
 
-  asm_filtroVentana10(&vectIn, &vectOut, 20);
+  DWT->CYCCNT = 0;
+  asm_productoEscalar12(vectMultIn, vectMultOut, 3, 3000);
+  const volatile uint32_t CiclosAsmEscalar12 = DWT->CYCCNT;
 
-  asm_pack32to16(&vectPack, &vectUnpack, 2);
+  DWT->CYCCNT = 0;
+  productoEscalar12(vectMultIn, vectMultOut, 3, 3000);
+  const volatile uint32_t CiclosCEscalar12 = DWT->CYCCNT;
+
+  DWT->CYCCNT = 0;
+  asm_filtroVentana10(vectIn, vectOut, 20);
+  const volatile uint32_t CiclosAsmFiltro= DWT->CYCCNT;
+
+  DWT->CYCCNT = 0;
+  filtroVentana10(vectIn, vectOut, 20);
+  const volatile uint32_t CiclosCFiltro= DWT->CYCCNT;
+
+  asm_pack32to16(vectPack, vectUnpack, 2);
 
   uint32_t maximoresultado = 0;
-  maximoresultado = asm_max(&vectIn2, 20);
-  uint32_t downsamplevect[16];
-  downsampleM(&vectIn2, &downsamplevect, 20, 5);
-  asm_invertir(&vectIn, 20);
+  maximoresultado = asm_max(vectIn2, 20);
+  int32_t downsamplevect[16] = {0};
+  downsampleM(vectIn2, downsamplevect, 20, 5);
+  asm_invertir(vectIn, 20);
 
-  asm_eco(&vectorEcoin, &vectorEcoout, 4096);
+  DWT->CYCCNT = 0;
+  asm_eco(vectorEcoin, vectorEcoout, 4096);
+  const volatile uint32_t CiclosAsmEco = DWT->CYCCNT;
 
+  DWT->CYCCNT = 0;
+  eco(vectorEcoin, vectorEcoout, 4096);
+  const volatile uint32_t CiclosCEco = DWT->CYCCNT;
 
+  printf("La funcion de saturacion a 12 bits tarda en C %d ciclos y en ASM %d ciclos.\n\r", CiclosCEscalar12, CiclosAsmEscalar12);
+  printf("La funcion de filtro de ventana tarda en C %d ciclos y en ASM %d ciclos.\n\r", CiclosCFiltro, CiclosAsmFiltro);
+  printf("La funcion de eco tarda en C %d ciclos y en ASM %d ciclos.\n\r", CiclosCEco, CiclosAsmEco);
 
   vectIn[1] = 1;
 

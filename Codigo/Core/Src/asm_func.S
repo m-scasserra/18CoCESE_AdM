@@ -130,7 +130,7 @@
 
 .thumb_func               			@ Se avisa al emsablador que esta es una funcion
     asm_productoEscalar12:			@ Etiqueta/nombre de la función.
-	    push {r4,r5}				@ Muevo el valor de r4 al stack
+	    push {r4-r5}				@ Muevo el valor de r4 al stack
         asm_escalar12_bucle:		@ Etiqueta de comienzo de bucle.
 		    movw r5, MAX_SAT		@ Muevo el valor #4095 a r5
 		    ldrh r4, [r0]          	@ Asigna a r4 el valor en la dirección r0.
@@ -145,7 +145,7 @@
     		add r1, 2			  	@ Pasa a la siguiente palabra/elemento en vector de salida
     		subs r2, 1            	@ Resta 1 a la cantidad de elementos y actualiza flags de estado del procesador. En particular, estamos interesados en el flag Z.
     		bne asm_escalar12_bucle @ La instrucción se ejecuta mientras el resultado de r1 - 1 no sea cero (Z == 0).
-    	pop {r4,r5}					@ Traigo el valor de r4 de vuelta del stack
+    	pop {r4-r5}					@ Traigo el valor de r4 de vuelta del stack
 	    bx lr	                 	@ La instrucción de salto no se ejecutó porque Z == 1, volvemos a quién nos llamó.
 
 
@@ -166,7 +166,7 @@
 
 .thumb_func               			@ Se avisa al emsablador que esta es una funcion
     asm_filtroVentana10:			@ Etiqueta/nombre de la función.
-	    push {r4, r5, r6, r7, r8}	@ Muevo el valor de r4, r5, r6, r7, r8 al stack
+	    push {r4-r8}	@ Muevo el valor de r4, r5, r6, r7, r8 al stack
       	mov r3, #0					@ Guardo el valor #0 en r3
       	mov r6, #0					@ Guardo el valor #0 en r6
       	mov r7, #0					@ Guardo el valor #0 en r7
@@ -199,7 +199,7 @@
 	      	add r3, #1						@ Sumo a r3 el valor #1
 	      	cmp r3, r2						@ Comparo el valor de r3 contra r2
 	      	bne asm_filtroVentana10_bucle	@ Si la comparacion da negativa salto a asm_filtroVentana10_bucle
-      	pop {r4, r5, r6, r7, r8}			@ Traigo el valor de r4, r5, r6, r7, r8 de vuelta del stack
+      	pop {r4-r8}			@ Traigo el valor de r4, r5, r6, r7, r8 de vuelta del stack
 	    bx lr	                 	@ La instrucción de salto no se ejecutó porque Z == 1, volvemos a quién nos llamó.
 
 
@@ -240,7 +240,7 @@
 
 .thumb_func
 	asm_max:
-		push {r4, r5}			@ Guardo en el stack los valores de r4 y r5
+		push {r4-r5}			@ Guardo en el stack los valores de r4 y r5
 		ldr r2, [r0], #4		@ Cargo en r2 el valor en la direccion en r0 y le sumo 4 a la direccion
 		mov r3, #0				@ Cargo en r3 el valor #0
 		mov r4, #0				@ Cargo en r4 el valor #0
@@ -259,7 +259,7 @@
 			bne asm_max_bucle	@ Si el resultado de la operacion anterior no me da #0 salto a asm_max_bucle
 	asm_max_fin:
 		mov r0, r3				@ Muevo el valor de r3 y a r0
-		pop {r4, r5}			@ Saco del stack los valores anteriores de r4 y r5
+		pop {r4-r5}			@ Saco del stack los valores anteriores de r4 y r5
 		bx lr					@ Vuelvo al programa principal
 
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -308,7 +308,7 @@
 
 .thumb_func
 	asm_eco:
-		push {r4, r5, r6}			@ Preservo los valores de los registros r4, r5, r6 moviendolos al stack
+		push {r4-r6}			@ Preservo los valores de los registros r4, r5, r6 moviendolos al stack
 		mov r6, r0					@ Guardo el la posicion de memoria del inicio del vector de entrada
 		mov r5, #882				@ Muevo el valor #882 al registro r5
 		mov r4, #0					@ Muevo el valor #0 al registro r4
@@ -329,5 +329,5 @@
 			str r3, [r1], #4		@ Guardo en memorio los 2 datos signados de 16 bits de r3 en la posicion de r1 y le sumo 4 a r1
 			cmp r4, r2				@ Comparo r4 y r2 y actualizo los flags del procesador
 			bne asm_eco_segundobucle@ si la anterior operacion no dio 0 salto a la etiqueta asm_eco_segundobucle
-		pop {r4, r5, r6}			@ Retiro del stack los valores anterior de r4, r5 y r6
+		pop {r4-r6}			@ Retiro del stack los valores anterior de r4, r5 y r6
 		bx lr						@ Vuelvo al programa principal

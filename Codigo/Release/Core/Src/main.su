@@ -1,0 +1,14 @@
+../Core/Src/main.c:81:5:__io_putchar	16	static
+../Core/Src/main.c:258:6:SystemClock_Config	88	static,ignoring_inline_asm
+../Core/Src/main.c:475:6:Error_Handler	0	static,ignoring_inline_asm
+../Core/Src/main.c:490:6:zeros	0	static
+../Core/Src/main.c:507:6:productoEscalar32	12	static
+../Core/Src/main.c:524:6:productoEscalar16	12	static
+../Core/Src/main.c:542:6:productoEscalar12	20	static
+../Core/Src/main.c:566:6:filtroVentana10	24	static
+../Core/Src/main.c:598:6:pack32to16	8	static
+../Core/Src/main.c:613:10:max	12	static
+../Core/Src/main.c:640:6:downsampleM	20	static
+../Core/Src/main.c:665:6:invertir	8	static
+../Core/Src/main.c:686:6:eco	16	static
+../Core/Src/main.c:147:5:main	16728	static,ignoring_inline_asm
