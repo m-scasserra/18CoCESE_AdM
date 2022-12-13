@@ -251,9 +251,9 @@ Para evitar esto es posible implementar aritmética saturada. Esto hace que si e
 Ej:
 Sin signar
 
-||Decimal|Binario|  
-||255|11111111|  
-||1|00000001|  
+|Operación suma|Decimal|Binario|  
+|Numero 1|255|11111111|  
+|Numero 2|1|00000001|  
 |Resultado esperado|256|100000000|
 |Resultado obtenido|0| 00000000|  
 
