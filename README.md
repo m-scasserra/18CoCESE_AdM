@@ -249,10 +249,13 @@ Debido a la naturaleza de la aritmética binaria, si una operación supera la ca
 Para evitar esto es posible implementar aritmética saturada. Esto hace que si el numero supero los bits que esta manejando este quedaría con el mayor o menor numero posible dependiendo de si es signado o no.
 
 Ej:
-Sin signar  
-255   0b 11111111  
-1  +  0b 00000001  
-256   0b100000000  ->	0    0b00000000  
+Sin signar
+
+||Decimal|Binario|  
+||255|11111111|  
+||1|00000001|  
+|Resultado esperado|256|100000000|
+|Resultado obtenido|0| 00000000|  
 
 Signado  
 127   0b 01111111  
