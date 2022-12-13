@@ -70,6 +70,7 @@ PSP: Program Stack Pointer se utiliza en el Thread mode cuando el CONTROL bit[1]
 
 Si no utilizamos un OS podemos usar siempre el MSP e ignorar el PSP.
 Si usamos un OS, el MSP es utilizado por el manejadores de excepciones mientras que el PSP es utilizado por las aplicaciones teniendo cada una un espacio propio del stack. El cambio de contexto del OS se encarga de cambiar el valor del PSP.
+Se los conoce como Shadowed Pointers porque no pueden ser modificados directamente si no que tenemos que indicar con una modificación de un bit especifico a un registro especifico cual es el puntero al stack que vamos a utilizar al volver de la interrupción.
 
 Las ventajas son:
 En caso de producirse algún error en una aplicación que corrompa la memoria, este solo afectaría al stack de la misma. El OS y otras aplicaciones no se verian afectadas idealmente.
@@ -140,13 +141,32 @@ Después de que se produzca un reset y antes de que el procesador empiece a ejec
 
 12. ¿Qué entiende por “core peripherals”? ¿Qué diferencia existe entre estos y el resto de los periféricos?
 
-
+Los Core Peripherals son periféricos que estan atados en su control y maneja directamente a instrucciones del procesador. Estos son manejados constanemente por el (pueden ser el NVIC, el systick o el MMU si es que esta implementada). A diferencia de los Core Independent Peripherals estos requieren ciclos del reloj del procesador para ser atendidos. Los segundos no requieren un manejo constante del procesador y pueden actuar independientemente del mismo. Esto tiene ventajas ya que aumenta el tiempo efectivo del procesador en tareas especificas y se evitan posibles saltos durante el proceso del mismo.
+Estan implementados dentro del mismo procesador los Core Peripherals.
 
 13. ¿Cómo se implementan las prioridades de las interrupciones? Dé un ejemplo
 
+En los Cortex-M4 las prioridades de las interrupciones se implementan mediante un controlador (NVIC) exclusivamente dedicado a ello. Este posee un vector de hasta 240 interrupciones y con múltiples niveles de prioridad de las mismas (entre 8 y 256 niveles).
+Las únicas que no son programables son las interrupciones de Reset, NMI y HardFault que siempre estan presentes y tienen una prioridad de -3, -2 y -1 respectivamente.
+Cada fabricante decide cuantas de estas posibles prioridades implementar. Pueden ser de 3 bits o 4 bits siendo las prioridades mas altas las de menor numero (0 la mas alta y 7, 15 o 255 la mas baja).
+Las interrupciones pueden ser habilitadas o deshabilitadas mediante modificaciones especificas al firmware.
+Por ejemplo, el systick suele tener una de las prioridades mas bajas fuera de alguna interrupción por falla ya que es necesario para la implementación de RTOS.
+
 14. ¿Qué es el CMSIS? ¿Qué función cumple? ¿Quién lo provee? ¿Qué ventajas aporta?
 
+Cortex Microcontroller Software Interface Standard es una estandarización de ARM apuntada a reducir costos y tiempos de produccion.
+Es un standard que se independiza de los vendedores de silicio para generar una capa de abstracción sobre  el hardware de los Cortex-M. Esto lo provee ARM junto con la comunidad y los vendedores.
+Algunos de las standards son diferentes controles de periféricos como puede ser el NVIC, el SysTick o el MPU y también algunos registros programables del Bloque de Control.
+Algunas de las funciones del microcontrolador no es posible acceder las mediante C puro ya que requieren el uso de assembly o modificaciones al toolchain. El CMSIS provee diferentes funciones para poder modificarlas.
+Las principales ventajas del CMSIS es el proveer una API con llamadas estandarizadas abstrayendo en parte del hardware especifico de cada microcontrolador lo cual reduce mucho el tiempo de desarrollo de aplicaciones y esto se ve impactado en la cantidad de productos que pueden utilizar una solución de Cortex y en el precio final de los mismos. También es central la posibilidad de reutilizar código en diferentes proyectos que tengan en común el uso de un Cortex-M. La generación de drivers independientes del toolchain ya que si son compatibles con CMSIS garantiza la independencia de toolchains especificas.
+
 15. Cuando ocurre una interrupción, asumiendo que está habilitada ¿Cómo opera el microprocesador para atender a la subrutina correspondiente? Explique con un ejemplo
+
+Una vez que se de una excepción y el procesador la acepte se producen 2 acciones:
+Primero se guarda el estado actual del procesador (valores de los registros, del stack actual, PC, Bloque de control, etc.) en el stack para que una vez que la excepción termine el procesador vuelva al mismo lugar donde se había quedado
+Segundo se busca en el NVIC el vector a la interrupción que se produjo para conseguir la dirección de las instrucciones del mismo.
+
+![Interrupcion](/Figuras/Interrupt.png)
 
 17. ¿Cómo cambia la operación de stacking al utilizar la unidad de punto flotante?
 
@@ -232,4 +252,4 @@ R1  40	||	 60  Valor original de R1
 \+   90	||	160  Suma de R0 + R1  
 /   45	||	 80  Divide cada uno de los resultado por 2  
 ___________________________
-R0	45	||	 80  Valor final de R0  
+R0  45	||	 80  Valor final de R0  
