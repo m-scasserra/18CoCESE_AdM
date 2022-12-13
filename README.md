@@ -63,6 +63,8 @@ SRAM region
 Periféricos
 Control interno del procesador y funciones de debuging
 
+![Mapa de memoria](/Figuras/MapaDeMemoria.png)
+
 5. ¿Qué ventajas presenta el uso de los “shadowed pointers” del PSP y el MSP?
 
 MSP: Main Stack Pointer es el stack pointer por defecto. Se utiliza en el modo Thread cuando el CONTROL bit[1] (SPSEL) es 0 y en el modo Handler se utiliza siempre.
@@ -166,21 +168,59 @@ Una vez que se de una excepción y el procesador la acepte se producen 2 accione
 Primero se guarda el estado actual del procesador (valores de los registros, del stack actual, PC, Bloque de control, etc.) en el stack para que una vez que la excepción termine el procesador vuelva al mismo lugar donde se había quedado
 Segundo se busca en el NVIC el vector a la interrupción que se produjo para conseguir la dirección de las instrucciones del mismo.
 
-![Interrupcion](/Figuras/Interrupt.png)
+![Interrupción](/Figuras/Interrupt.png)
+
+El stack que se usa para el stacking puede ser el PSP o el MSP pero una vez que entra en la interrupción al estar usando modo Handler si o si se va a utilizar el MSP. Por ende cualquier interrupción que se anide en el vector a partir de la primera va a ser en el MSP.
+
+![Interrupción anidada](/Figuras/NestedInterrupt.png)
 
 17. ¿Cómo cambia la operación de stacking al utilizar la unidad de punto flotante?
 
+Debido a que la unidad de punto flotante posee 32 registros de 32 bits cada uno que pueden estar separados o agrupados en 16 double word el proceso del stacking se vuelve mucho mas largo.
+Una solución a esto es la utilizacion del *lazy stacking* en el cual se va a leer el estado de diferentes bits en el registro de CONTROL para saber si es necesario guardar el estado de estos registros o no cuando se produzca un stacking. Esto esta activado por defecto y no es necesario ningún manejo de registros durante el handler exception debido a que el hardware propio se encarga.
+Ej:
+Si el bit FPCA del registro CONTROL indica si el contexto actual esta utilizando una operación de punto flotante o no (1 cuando la ejecuta y 0 cuando no).  
+
 18. Explique las características avanzadas de atención a interrupciones: tail chaining y late arrival.
+
+Si se produce una excepción y el procesador ya se encuentra procesando una de la misma o mayor prioridad esta nueva excepción entra en un estado pendiente. Cuando el procesador termine la excepción actual en vez de volver a cargar todos los registros y el estado del programa pre excepción para volver a cargarlos al stack para atender la nueva interrupción este va a saltar directamente al exception handler de ella. Esto ahorra mucho tiempo de proceso y se conoce como **tail chaining**
+
+![Tail Chaining](/Figuras/TailChaining.png)
+
+En cambio si durante la acción del stacking el procesador recibe una excepción de mayor prioridad este va a continuar con el stacking pero va a buscar el Exception Handler de la segunda excepción sin tener que guardar el stack de la primer excepción. Esto ahorra tiempo y espacio del stack. Esto es conocido como **late arrival.**
+
+![Late Arrival](/Figuras/LateArrival.png)
 
 19. ¿Qué es el systick? ¿Por qué puede afirmarse que su implementación favorece la portabilidad de los sistemas operativos embebidos?
 
+El SysTick es un timer integrado directamente en los Cortex-M que ya esta integrado en el NVIC que puede tomar como referencia el clock del sistema o un externo. Para la implementación de un OS es necesario la implementación de un sistema de timings que el kernel pueda invocar regularmente. También tiene como medida de seguridad que solo se puede desactivar si se esta corriendo en handler mode (El procesador esta diseñado así)
+Todos los Cortex-M cuentan con este timer por ende un OS escrito en cualquier Cortex-M4 puede ser porteado a otro Cortex-M4 sin mayor dificulta favoreciendo la portabilidad de OSs.
+
 20. ¿Qué funciones cumple la unidad de protección de memoria (MPU)?
+
+La MPU es un periférico opcional que esta puede estar presente en los Cortex-M4. Su principal función es definir niveles de permiso de acceso a memoria (Acceso Completo o Acesso Privilegiado Unicamente) a distintos sectores de la memoria (Cortex-M4 soporta hasta 8 regiones programables con diferentes espacios, direcciones y configuraciones).
+Una de las funciones es evitar que diferentes aplicaciones puedan corromper memoria o stack utilizado por otros programas o el propio OS. Si la aplicación falla, la única que falla va a ser ella y no va a llevarse consigo a todo el sistema.
+También previene que se cualquier aplicación pueda acceder a distintos periféricos que pueden ser críticos o generar problemas de seguridad. Puede desactivar la ejecución de código de zonas de memoria no permitida como la RAM
+Si se produciera un acceso no autorizado pueden ocurrir una de dos excepciones de alta prioridad (MemManage o HardFault)
 
 21. ¿Cuántas regiones pueden configurarse como máximo? ¿Qué ocurre en caso de haber solapamientos de las regiones? ¿Qué ocurre con las zonas de memoria no cubiertas por las regiones definidas?
 
+La MPU puede definir hasta 8 regiones de memoria cada una con diferente tamaño, direcciones de inicio y configuraciones especificas.
+Si el Bit PRIVDEFENA esta en 0 y el MPU esta activado toda memoria que no se encuentre en una de las 8 posibles regiones definidas en el MPU va a generar un fallo. Todas estas regiones no excluidas de los 8 espacios se los conoce como background region.
+
+![Mapa de memoria protegido](/Figuras/ProteccionMPU.png)
+
 22. ¿Para qué se suele utilizar la excepción PendSV? ¿Cómo se relaciona su uso con el resto de las excepciones? Dé un ejemplo
 
-23. ¿Para qué se suele utilizar la excepción SVC? Expliquelo dentro de un marco de un sistema operativo embebido.
+Pended Service Call es una excepción que se pone en estado pendiente escribiendo al ICSR. Al no ser precisa esta puede ser activada por una excepción de mayor prioridad y no va a ser ejecutada hasta que esta termine. Debido a este comportamiento podemos poner en la queue esta tarea hasta que todas las tareas de mayor prioridad fueran cubiertas mientras la configuremos con la menor prioridad.
+Ej:
+Si una ISR A tiene una parte que es muy dependiente del tiempo y una parte que no lo es se puede setear la mayor prioridad a la excepción A y en algún momento de la misma activar el estatus del PendSV. Una vez que termine la sección time dependant y si no hay ninguna excepción de mayor prioridad se va a empezar a ejecutar el PendSV antes de volver a la aplicación principal. Esto nos dejaría atender cualquier otra excepción que surja en el medio de esta segunda parte no Time dependant. Cuando termine el PendSV se puede volver a la ejecución del código normal.
+
+![Uso del PendSV](/Figuras/PendSV.png)
+
+23. ¿Para qué se suele utilizar la excepción SVC? Explique lo dentro de un marco de un sistema operativo embebido.
+
+SuperVisorCall es una excepción que tiene un comportamiento diferente a otras interrupciones. En una interrupción común pueden pasar varias instrucciones entre que el estado de pendiente y la ejecución de la misma se efectué. En cambio el SVC tiene que correr el handler correspondiente apenas esta excepción es llamada. Debido a esto es útil dentro de un OS ya que nos puede abstraer de la capa de hardware ya que nuestra aplicación llama a un SVC para un recurso el cual no tiene acceso y el OS se encarga (previamente programado en otra tarea) de proveer lo necesario a la aplicación para correr. También puede usarse para generar cambios de contexto cuando la tarea tiene que esperar a algún periférico o dato por su naturaleza de inmediata
 
 #### ISA
 
