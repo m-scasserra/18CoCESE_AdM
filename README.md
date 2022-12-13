@@ -229,7 +229,7 @@ SuperVisorCall es una excepción que tiene un comportamiento diferente a otras i
 Los sufijos de tamaño se utilizan para que el procesador sepa como operar con el dato que esta obteniendo de la memoria. Si tratarlo como un byte signado o no signado (sb y b respectivamente) o como un halfword signado o no signado (sh y h respectivamente). Si se obvia se va a tratar como un word
 
 Ej:
-LDRH R1, [R0]
+`LDRH R1, [R0]`
 
 Trae de la dirección en R0 el valor y lo ubica en R1. Trata el valor como sin signo por ende completa el registro de 32 bits con 0s 
 
@@ -238,7 +238,7 @@ Trae de la dirección en R0 el valor y lo ubica en R1. Trata el valor como sin s
 El sufijo s se utiliza para cuando se necesita que una operación actualice los flags del procesador. Por defecto las operaciones no lo hacen.
 
 Ej:
-ADDS R1, R2
+`ADDS R1, R2`
 
 Si la suma anterior provocara un carry, esta instrucción actualizaría la flag de carry del procesador.
 
@@ -285,7 +285,7 @@ Su aplicación nos deja procesar mucha mas información de manera mucho mas efic
 
 Ej:
 
-SHADD16 R0, R1		Hace la suma signada de 2 valores de 16 bits y divide el resultado por 2
+`SHADD16 R0, R1`		Hace la suma signada de 2 valores de 16 bits y divide el resultado por 2
 
 |R0 | 50 |100 | Valor original de R0  |
 |:---:|:---:|:---:|:---|
